@@ -4,7 +4,11 @@ import Reaction from "../models/Reaction";
 
 export default class ReactionsRepository {
 
-    static reactions: Array<Reaction> = [];
+    private static reactions: Array<Reaction> = [];
+
+    static clearCache() {
+        ReactionsRepository.reactions = [];
+    }
 
     static async getReactions(): Promise<Array<Reaction>> {
 

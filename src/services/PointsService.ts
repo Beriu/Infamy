@@ -1,7 +1,8 @@
 import Reaction from "../models/Reaction";
-import {User} from "discord.js";
+import {Message, TextChannel, User} from "discord.js";
 import Score from "../models/Score";
 import ScoresRepository from "../repositories/ScoresRepository";
+import {getBorderCharacters, table, TableColumns} from "table";
 
 export default class PointsService {
 
@@ -20,5 +21,17 @@ export default class PointsService {
             let score = await ScoresRepository.createScore({ id: target.id, username: target.username, score: points });
             return new Score(score.data);
         }
+    }
+
+    static async getScores(msg: Message) {
+        const channel = msg.channel as TextChannel;
+        const scores = await ScoresRepository.getScores();
+        let formattedScores = scores.map(s => [ s.username, s.score ]);
+        formattedScores = [ [ 'Username', 'Score' ], ...formattedScores];
+
+        return await channel.send('\`\`\`' + table(formattedScores, {
+                border: getBorderCharacters(`ramac`)
+            }
+        ) + '\`\`\`');
     }
 }
