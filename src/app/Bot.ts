@@ -14,22 +14,24 @@ export default class Bot {
         this.client.on('message', this.messageRouter);
     }
 
-    async messageRouter(msg: Message) {
+    messageRouter(msg: Message) {
+        if(msg.content.startsWith('$help')) {
+            return HelpService.handle(msg);
+        }
         if(msg.content.startsWith('$stats')) {
-            return await PointsService.getScores(msg);
+            return PointsService.getScores(msg);
         }
         if(msg.content.startsWith('$clear-cache')) {
-            return await CacheService.handle(msg);
-        }
-        if(msg.content.startsWith('$help')) {
-           return await HelpService.handle(msg);
+            return CacheService.handle(msg);
         }
         if(msg.content.startsWith('$')) {
-            return await ReactService.handle(msg);
+            return ReactService.handle(msg);
         }
     }
 
-    async start() {
-        return this.client.login(process.env.DISCORD_CLIENT_TOKEN);
+    start(): void {
+        this.client
+            .login(process.env.DISCORD_CLIENT_TOKEN)
+            .catch(error => console.error(error));
     }
 }
