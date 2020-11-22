@@ -2,8 +2,7 @@ import Reaction from "../models/Reaction";
 import {Message, TextChannel, User} from "discord.js";
 import Score from "../models/Score";
 import ScoresRepository from "../repositories/ScoresRepository";
-import {getBorderCharacters, table, TableUserConfig} from "table";
-import codeText from "../utils/codeText";
+import table from "../utils/table";
 
 export default class PointsService {
 
@@ -30,23 +29,6 @@ export default class PointsService {
         let formattedScores = scores
             .map(s => [ s.username, s.score.toString() ])
             .sort((a,b) => parseInt(a[1]) - parseInt(b[1]));
-
-        formattedScores = [ [ 'Username', 'Score' ], ...formattedScores];
-
-        const userConfig = {
-            border: getBorderCharacters(`ramac`),
-            columns: {
-                1: {
-                    alignment: 'center',
-                    width: 10
-                }
-            }
-        } as TableUserConfig;
-
-        return await channel.send(
-            codeText(
-                table(formattedScores, userConfig)
-            )
-        );
+        return await channel.send(table(formattedScores, [ 'Username', 'Score' ]));
     }
 }
