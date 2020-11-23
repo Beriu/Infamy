@@ -3,18 +3,22 @@ import HelpService from "../services/HelpService";
 import ReactService from "../services/ReactService";
 import CacheService from "../services/CacheService";
 import PointsService from "../services/PointsService";
+import CreateCommandService from "../services/CreateCommandService";
 
 export default class Bot {
 
     private client: DiscordClient;
 
     constructor() {
-        this.client = new DiscordClient();
+        this.client = new DiscordClient();``
         this.client.on('ready', () => console.info('Discord bot running.'));
         this.client.on('message', this.messageRouter);
     }
 
     messageRouter(msg: Message) {
+        if(msg.content.startsWith('$create')) {
+            return CreateCommandService.handle(msg);
+        }
         if(msg.content.startsWith('$help')) {
             return HelpService.handle(msg);
         }

@@ -4,15 +4,15 @@ import Score from "../models/Score";
 import ScoresRepository from "../repositories/ScoresRepository";
 import table from "../utils/table";
 
-export default class PointsService {
+export class PointsService {
 
-    static calculate(multiplier: number, modifierText: string) {
+    calculate(multiplier: number, modifierText: string) {
         const modifier = modifierText === 'negative' ? -1 : 1;
         return modifier * multiplier * 10;
     }
 
-    static async addScore(target: User, reaction: Reaction): Promise<Score> {
-        const points = PointsService.calculate(reaction.multiplier, reaction.reactionType);
+    async addScore(target: User, reaction: Reaction): Promise<Score> {
+        const points = this.calculate(reaction.multiplier, reaction.reactionType);
         try {
             let score = await ScoresRepository.findScoreByUserId(target.id);
             score = await ScoresRepository.updateScoreByReference(score.ref, { score: score.data.score + points });
@@ -23,7 +23,7 @@ export default class PointsService {
         }
     }
 
-    static async getScores(msg: Message) {
+    async getScores(msg: Message) {
         const channel = msg.channel as TextChannel;
         const scores = await ScoresRepository.getScores();
         let formattedScores = scores
@@ -32,3 +32,5 @@ export default class PointsService {
         return await channel.send(table(formattedScores, [ 'Username', 'Score' ]));
     }
 }
+
+export default new PointsService();

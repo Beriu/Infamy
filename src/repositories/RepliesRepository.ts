@@ -12,18 +12,22 @@ export type reply = {
     message: string
 };
 
-export default class RepliesRepository {
+export class RepliesRepository {
 
-    private static replies: reply[] = [];
+    private replies: reply[] = [];
 
-    static clearCache() {
-        RepliesRepository.replies = [];
+    clearCache() {
+        this.replies = [];
     }
 
-    static async getReplies(): Promise<Array<reply>> {
+    addReply(reply: reply) {
+        this.replies.push(reply);
+    }
 
-        if(RepliesRepository.replies.length > 0) {
-            return RepliesRepository.replies;
+    async getReplies(): Promise<Array<reply>> {
+
+        if(this.replies.length > 0) {
+            return this.replies;
         }
 
         const repliesResponse = await database.query(
@@ -36,12 +40,26 @@ export default class RepliesRepository {
             const dto = r.data;
             return { reactionId: dto.reaction_id, message: dto.message };
         });
-        RepliesRepository.replies = replies;
+        this.replies = replies;
         return replies;
     }
 
-    static async getRepliesById(id: string): Promise<Array<string>> {
-        const replies = await RepliesRepository.getReplies();
+    async getRepliesById(id: string): Promise<Array<string>> {
+        const replies = await this.getReplies();
         return replies.filter(r => r.reactionId === id).map(r => r.message);
     }
+
+    async createReply(reactionId: string, message: string): Promise<reply> {
+        const { data } = await database.query(
+            query.Create(
+                query.Collection('replies'),
+                { data: { reaction_id: reactionId, message } },
+            )
+        ) as FaunaResponse<any>;
+        const reply = { reactionId: data.reaction_id, message: data.message };
+        this.replies.push(reply);
+        return reply;
+    }
 }
+
+export default new RepliesRepository();

@@ -4,9 +4,9 @@ import {query, values} from "faunadb";
 import {FaunaResponse} from "../models/FaunaResponse";
 import Ref = values.Ref;
 
-export default class ScoresRepository {
+export class ScoresRepository {
 
-    static async getScores(): Promise<Array<Score>> {
+    async getScores(): Promise<Array<Score>> {
         const scoresResponse = await database.query(
             query.Map(
                 query.Paginate(query.Documents(query.Collection('scores'))),
@@ -16,7 +16,7 @@ export default class ScoresRepository {
         return scoresResponse.data.map((v: any) => new Score(v.data));
     }
 
-    static async findScoreByUserId(id: string): Promise<FaunaResponse<Score>> {
+    async findScoreByUserId(id: string): Promise<FaunaResponse<Score>> {
         return await database.query(
             query.Get(
                 query.Match(query.Index('scores_by_user_id'), id)
@@ -24,13 +24,13 @@ export default class ScoresRepository {
         );
     }
 
-    static async updateScoreByReference(ref: Ref, data: Partial<Score>): Promise<FaunaResponse<Score>> {
+    async updateScoreByReference(ref: Ref, data: Partial<Score>): Promise<FaunaResponse<Score>> {
         return await database.query(
             query.Update(ref, { data })
         );
     }
 
-    static async createScore(data: ScoreDTO): Promise<FaunaResponse<Score>> {
+    async createScore(data: ScoreDTO): Promise<FaunaResponse<Score>> {
         return await database.query(
             query.Create(
                 query.Collection('scores'),
@@ -39,3 +39,5 @@ export default class ScoresRepository {
         );
     }
 }
+
+export default new ScoresRepository();

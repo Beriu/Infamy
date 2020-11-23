@@ -4,9 +4,13 @@ import RepliesRepository from "../repositories/RepliesRepository";
 import PointsService from "./PointsService";
 import Reaction from "../models/Reaction";
 
-export default class ReactService {
+export class ReactService {
 
-    static async handle(msg: Message) {
+    private static randomize(length: number) {
+        return Math.floor((Math.random() * length));
+    }
+
+    async handle(msg: Message) {
 
         const channel = msg.channel as TextChannel;
 
@@ -20,12 +24,12 @@ export default class ReactService {
             return await msg.reply(`\`$${command}\` is an invalid command, type \`$help\` to get a list of commands`);
         }
         const reaction = reactions.find(r => r.translation === command) as Reaction;
-        const response = await ReactService.processReaction(msg, reaction);
+        const response = await this.processReaction(msg, reaction);
 
         return await channel.send(response);
     }
 
-    private static async processReaction(msg: Message, reaction: Reaction) {
+    private async processReaction(msg: Message, reaction: Reaction) {
         const from = msg.author.username;
         const to = msg.mentions.users.first();
 
@@ -33,10 +37,10 @@ export default class ReactService {
         if (to.username === from) return 'Self love is good, but don\'t overdue it.';
 
         const {score} = await PointsService.addScore(to, reaction);
-        return await ReactService.selectMessage(to, reaction, score);
+        return await this.selectMessage(to, reaction, score);
     }
 
-    private static async selectMessage(to: User, reaction: Reaction, score: number) {
+    private async selectMessage(to: User, reaction: Reaction, score: number) {
         const replyPool = await RepliesRepository.getRepliesById(reaction.reactionId);
         const index = ReactService.randomize(replyPool.length);
 
@@ -51,8 +55,6 @@ export default class ReactService {
             .replace('[score]', score.toString())
             .replace('[reaction]', reaction.translation);
     }
-
-    private static randomize(length: number) {
-        return Math.floor((Math.random() * length));
-    }
 }
+
+export default new ReactService();
